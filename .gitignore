@@ -1,0 +1,16 @@
+*.pyc
+*.py~
+*.py#
+
+*.pkl
+*.mp4
+uploadsave/*
+
+test/
+.idea/
+*.npz
+
+*.zip
+*.sqlite3
+*.png
+*.gif
