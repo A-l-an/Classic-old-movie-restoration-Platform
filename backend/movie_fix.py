@@ -2,7 +2,7 @@ from urllib import response
 from django.http import HttpResponse, Http404, FileResponse
 from django.conf.urls.static import static
 from backend import settings
-from backend.video_process import video_split
+from backend.video_process import video_scene_detect
 
 import os
 

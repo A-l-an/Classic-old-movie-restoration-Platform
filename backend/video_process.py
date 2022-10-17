@@ -9,19 +9,31 @@ from scenedetect.video_splitter import split_video_ffmpeg
 import cv2
 import os
 
+
 # output_path: should be a directory
 def video_to_frames(video_path, output_path):
     filename = os.path.basename(video_path)
     video_name, video_ext, media_root = filename.split('.')[0], filename.split('.')[1], video_path.replace(os.path.basename(video_path), '')
 
-    os.system('ffmpeg -y -i "{}" "{}"'.format(video_path, output_path + video_name + '_"%05d".png'))
+    os.system('ffmpeg -y -i "{}" "{}"'.format(video_path, output_path + '/' + video_name + '_"%05d".png'))
 
 
-def frames_to_video(frames_path, output_path):
-    #os.system('ffmpeg -y -i {} -codec:v h264 {}'.format()))
-    pass
+def video_split(video_path, frames_path, audio_path):
+    video_to_frames(video_path, frames_path)
+    os.system('ffmpeg -y -i "{}" -vn -acodec copy "{}"'.format(video_path, audio_path))
 
-def video_split(video_path):
+
+# output_path: should be a file name
+def frames_to_video(frames_path, video_name, output_path, fps):
+    os.system('ffmpeg -y -i "{}" -codec:v h264 -r {} "{}"'.format(frames_path + video_name + '_"%05d".png', fps, output_path))
+
+
+# output_path: should be a file name
+def video_build(video_noaudio_path, audio_path, output_path):
+    os.system('ffmpeg -y -i "{}" -i "{}" -codec:v copy -codec:a copy "{}"'.format(video_noaudio_path, audio_path, output_path))
+    
+
+def video_scene_detect(video_path):
 	#定义re_scene_list 为视频切分场景的列表结果
     re_scene_list = []
     cap = cv2.VideoCapture(video_path)
@@ -67,11 +79,7 @@ def video_split(video_path):
 
 # xxx.mp4 - xxx_1.mp4 + xxx_2.mp4 + xxx_3.mp4 - xxx_1_2X.mp4 + xxx_2_2X.mp4 + xxx_3_2X.mp4 - xxx_concat.mp4 - xxx.mp4
 # xxx.mp4 - xxx_2X.mp4 - xxx.mp4
-def video_fix(video_path):
-    scene_list = video_split(video_path)
-    filename = os.path.basename(video_path)
-    video_name, video_ext, media_root = filename.split('.')[0], filename.split('.')[1], video_path.replace(os.path.basename(video_path), '')
-    '''
+'''
     if scene_list:
         fp = open('temp.txt', 'a')
         for i in range(len(scene_list)):
@@ -92,6 +100,18 @@ def video_fix(video_path):
         os.system('ffmpeg -y -loglevel quiet -i "{}" -codec:v h264 "{}"'.format(media_root + video_name + '_2X.' + video_ext, video_path))
     '''
 
+def video_fix(video_path, output_path):
+    # scene_list = video_scene_detect(video_path)
+    filename = os.path.basename(video_path)
+    video_name, video_ext, media_root = filename.split('.')[0], filename.split('.')[1], video_path.replace(os.path.basename(video_path), '')
+    
 
-    return video_path
 
+    return output_path
+
+
+# video_to_frames('/home/u190110232/jupyterlab/moviefix/uploadsave/sample.mp4', '/home/u190110232/jupyterlab/moviefix/uploadsave/frames')
+frames_to_video('/home/u190110232/jupyterlab/moviefix/uploadsave/frames/', 'sample', '/home/u190110232/jupyterlab/moviefix/uploadsave/sample_merge.mp4', 30)
+
+# video_split('/home/u190110232/jupyterlab/moviefix/uploadsave/sample.mp4', '/home/u190110232/jupyterlab/moviefix/uploadsave/frames', '/home/u190110232/jupyterlab/moviefix/uploadsave/audio/sample.ac3')
+# video_build('/home/u190110232/jupyterlab/moviefix/uploadsave/sample_merge.mp4', '/home/u190110232/jupyterlab/moviefix/uploadsave/audio/sample.ac3', '/home/u190110232/jupyterlab/moviefix/uploadsave/sample_rebuild.mp4')

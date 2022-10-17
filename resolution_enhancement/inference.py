@@ -7,6 +7,7 @@ import time
 import config
 from imgproc import tensor2image, image2tensor
 from model import CARN
+from tqdm import tqdm
 
 
 def main(args):
@@ -22,10 +23,11 @@ def main(args):
 
     # Start the verification mode of the model.
     model.eval()
-    path = './input'            # input path
+    path = args.path            # input path   xxx/xxx/xx/xxxxx
     path_list = os.listdir(path)
+    path_list.sort()
 
-    for i in range(len(path_list)):
+    for i in tqdm(range(len(path_list)), desc='resolution_enhancement'):
         lr_image = path + '/' + path_list[i]
         # print("Input:",lr_image)
 
@@ -45,23 +47,25 @@ def main(args):
         # Use the model to generate super-resolved images
         with torch.no_grad():
             sr_tensor = model(lr_tensor)
-        print("model runtime: {:.3f}".format(time.time() - start_t))
+        #print("model runtime: {:.3f}".format(time.time() - start_t))
 
         # Save image
         sr_image = tensor2image(sr_tensor, False, False)
         sr_image = cv2.cvtColor(sr_image, cv2.COLOR_RGB2BGR)
 
-        outpath = './output/out' + str(i + 1) + '.png'
+        outpath = args.outpath + '/out' + str(i + 1) + '.png' # xxx/xxx/xx/xxxxx
 
         cv2.imwrite(outpath, sr_image)
 
-        print(f"SR image save to `{outpath}`\n")
+        #print(f"SR image save to `{outpath}`\n")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Using the CARN model generator super-resolution images.")
     # parser.add_argument("--weights_path", default="./models/pretrained_models/CARN_x2.pth.tar", type=str)
     parser.add_argument("--weights_path", default="./models/pretrained_models/CARN_x4.pth.tar",type=str)
+    parser.add_argument('--path', dest='path', type=str, default=None)
+    parser.add_argument('--outpath', dest='outpath', type=str, default=None)
     args = parser.parse_args()
 
     main(args)
