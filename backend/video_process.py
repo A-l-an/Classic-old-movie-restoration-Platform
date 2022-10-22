@@ -8,7 +8,8 @@ from scenedetect.video_splitter import split_video_ffmpeg
 
 import cv2
 import os
-
+import numpy as np
+from PIL import Image
 
 # output_path: should be a directory
 def video_to_frames(video_path, output_path):
@@ -24,13 +25,29 @@ def video_split(video_path, frames_path, audio_path):
 
 
 # output_path: should be a file name
-def frames_to_video(frames_path, video_name, output_path, fps):
-    os.system('ffmpeg -y -i "{}" -codec:v h264 -r {} "{}"'.format(frames_path + video_name + '_"%05d".png', fps, output_path))
+def frames_to_video(frames_path, output_path, fps):
+    #os.system('ffmpeg -y -i "{}" -r {} -vf fps={} "{}"'.format(frames_path + '/' + video_name + '_"%05d".png', fps, fps, output_path))
+    frame_list = os.listdir(frames_path)
+    frame_list.sort()
+    # print(frame_list)
+    
+    frame = Image.open(os.path.join(frames_path, frame_list[0]))
+    img_size = frame.size #获得图片分辨率，im_dir文件夹下的图片分辨率需要一致
+ 
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
+    videoWriter = cv2.VideoWriter(output_path, fourcc, fps, img_size)
+    
+    for i in range(len(frame_list)):
+        frame_name = os.path.join(frames_path, frame_list[i])
+        frame = cv2.imdecode(np.fromfile(frame_name, dtype=np.uint8), -1)
+        videoWriter.write(frame)
+    videoWriter.release()
+ 
 
 
 # output_path: should be a file name
 def video_build(video_noaudio_path, audio_path, output_path):
-    os.system('ffmpeg -y -i "{}" -i "{}" -codec:v copy -codec:a copy "{}"'.format(video_noaudio_path, audio_path, output_path))
+    os.system('ffmpeg -y -i "{}" -i "{}" -codec:v h264 -codec:a aac -strict experimental "{}"'.format(video_noaudio_path, audio_path, output_path))
     
 
 def video_scene_detect(video_path):
@@ -100,18 +117,14 @@ def video_scene_detect(video_path):
         os.system('ffmpeg -y -loglevel quiet -i "{}" -codec:v h264 "{}"'.format(media_root + video_name + '_2X.' + video_ext, video_path))
     '''
 
-def video_fix(video_path, output_path):
-    # scene_list = video_scene_detect(video_path)
-    filename = os.path.basename(video_path)
-    video_name, video_ext, media_root = filename.split('.')[0], filename.split('.')[1], video_path.replace(os.path.basename(video_path), '')
-    
 
 
-    return output_path
 
 
 # video_to_frames('/home/u190110232/jupyterlab/moviefix/uploadsave/sample.mp4', '/home/u190110232/jupyterlab/moviefix/uploadsave/frames')
-frames_to_video('/home/u190110232/jupyterlab/moviefix/uploadsave/frames/', 'sample', '/home/u190110232/jupyterlab/moviefix/uploadsave/sample_merge.mp4', 30)
+# frames_to_video('/home/u190110232/jupyterlab/moviefix/uploadsave/frames', 'sample', '/home/u190110232/jupyterlab/moviefix/uploadsave/sample_merge.mp4', 30)
+# frames_to_video('/home/u190110232/jupyterlab/moviefix/uploadsave/frames', '/home/u190110232/jupyterlab/moviefix/uploadsave/sample_merge.mp4', 30)
 
-# video_split('/home/u190110232/jupyterlab/moviefix/uploadsave/sample.mp4', '/home/u190110232/jupyterlab/moviefix/uploadsave/frames', '/home/u190110232/jupyterlab/moviefix/uploadsave/audio/sample.ac3')
-# video_build('/home/u190110232/jupyterlab/moviefix/uploadsave/sample_merge.mp4', '/home/u190110232/jupyterlab/moviefix/uploadsave/audio/sample.ac3', '/home/u190110232/jupyterlab/moviefix/uploadsave/sample_rebuild.mp4')
+
+#video_split('/home/u190110232/jupyterlab/moviefix/uploadsave/sample.mp4', '/home/u190110232/jupyterlab/moviefix/uploadsave/frames', '/home/u190110232/jupyterlab/moviefix/uploadsave/audio/sample.mp3')
+# video_build('/home/u190110232/jupyterlab/moviefix/uploadsave/sample_merge.mp4', '/home/u190110232/jupyterlab/moviefix/uploadsave/audio/sample.mp3', '/home/u190110232/jupyterlab/moviefix/uploadsave/sample_rebuild.mp4')

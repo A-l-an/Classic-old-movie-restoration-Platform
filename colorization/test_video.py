@@ -1,3 +1,7 @@
+import os
+os.environ['MKL_THREADING_LAYER'] = 'GNU' 
+os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
+
 from deoldify import device
 from deoldify.device_id import DeviceId
 #choices:  CPU, GPU0...GPU7
@@ -6,6 +10,7 @@ device.set(device=DeviceId.GPU0)
 from deoldify.visualize import *
 plt.style.use('dark_background')
 import warnings
+import argparse
 warnings.filterwarnings("ignore", category=UserWarning, message=".*?Your .*? set is empty.*?")
 
 colorizer = get_video_colorizer()
@@ -17,9 +22,15 @@ render_factor=21
 # source_url='https://twitter.com/silentmoviegifs/status/1116751583386034176'
 # source_url = 'https://www.youtube.com/watch?v=oFqr77T6pBc'
 # file_name = 'The Godfather (Black and White Sample)'
+
+parser = argparse.ArgumentParser(description='Colorization')
+parser.add_argument('--video', dest='video', type=str, default=None)
+args = parser.parse_args()
+
 source_url = None
-file_name = 'IMG_9567'
-file_name_ext = file_name + '.MOV'
+file_name_ext = args.video
+print(file_name_ext)
+file_name = file_name_ext.split('.')[0]
 result_path = None
 
 if source_url is not None:
@@ -28,6 +39,6 @@ else:
     result_path = colorizer.colorize_from_file_name(file_name_ext, render_factor=render_factor)
 
 # print(result_path)
-show_video_in_notebook(result_path)
-for i in range(10,45,2):
-    colorizer.vis.plot_transformed_image('video/bwframes/' + file_name + '/00001.jpg', render_factor=i, display_render_factor=True, figsize=(8,8))
+#show_video_in_notebook(result_path)
+#for i in range(10,45,2):
+#    colorizer.vis.plot_transformed_image('video/bwframes/' + file_name + '/00001.jpg', render_factor=i, display_render_factor=True, figsize=(8,8))

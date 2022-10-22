@@ -53,7 +53,7 @@ def main(args):
         sr_image = tensor2image(sr_tensor, False, False)
         sr_image = cv2.cvtColor(sr_image, cv2.COLOR_RGB2BGR)
 
-        outpath = args.outpath + '/out' + str(i + 1) + '.png' # xxx/xxx/xx/xxxxx
+        outpath = args.outpath + '/out' + ('%05d' % (i+1)) + '.png' # xxx/xxx/xx/xxxxx
 
         cv2.imwrite(outpath, sr_image)
 
